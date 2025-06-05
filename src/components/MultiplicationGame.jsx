@@ -14,7 +14,7 @@ import { shareResultsAsImage } from '../common/utils';
 import ShareableStats from './ShareableStats';
 
 const MultiplicationGame = () => {
-  const GAME_TIME = 300; // 5 minutes in seconds
+  const GAME_TIME = 30; // 5 minutes in seconds
   const resultsRef = useRef(null);
   const [gameMode, setGameMode] = useState('menu');
   const [currentQuestion, setCurrentQuestion] = useState({ num1: 0, num2: 0 });
@@ -107,11 +107,12 @@ const MultiplicationGame = () => {
 
   const generateAllPossibleQuestions = (allowedNumbers) => {
     const questions = [];
+    const allNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // כל המספרים האפשריים
 
     for (let i = 0; i < allowedNumbers.length; i++) {
-      for (let j = 0; j < allowedNumbers.length; j++) {
-        const num1 = allowedNumbers[i];
-        const num2 = allowedNumbers[j];
+      for (let j = 0; j < allNumbers.length; j++) {
+        const num1 = allowedNumbers[i]; // מספר מהרמה
+        const num2 = allNumbers[j]; // כל מספר מ-1 עד 10
 
         // Create normalized key (smaller number first unless they're equal)
         const minNum = Math.min(num1, num2);
@@ -119,13 +120,7 @@ const MultiplicationGame = () => {
         const questionKey =
           num1 === num2 ? `${num1}×${num2}` : `${minNum}×${maxNum}`;
 
-        // Add both variations if numbers are different
-        if (num1 !== num2) {
-          questions.push({ num1, num2, key: questionKey });
-          questions.push({ num1: num2, num2: num1, key: questionKey });
-        } else {
-          questions.push({ num1, num2, key: questionKey });
-        }
+        questions.push({ num1, num2, key: questionKey });
       }
     }
 
@@ -644,6 +639,48 @@ const MultiplicationGame = () => {
     );
   }
 
+  const getTotalQuestionsForDifficulty = (diff) => {
+    const allowedNumbers = {
+      easy: [1, 2, 5, 10], // 4 מספרים × 10 = 40, מינוס 6 כפילויות = 34
+      medium: [3, 4, 9], // 3 מספרים × 10 = 30, מינוס 3 כפילויות = 27
+      hard: [6, 7, 8], // 3 מספרים × 10 = 30, מינוס 3 כפילויות = 27
+      champion: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // 10 מספרים × 10 = 100, מינוס 45 כפילויות = 55
+    };
+
+    const numbers = allowedNumbers[diff];
+    if (!numbers) return 0;
+
+    // כל מספר מהרמה עם כל המספרים 1-10
+    const totalPossible = numbers.length * 10;
+
+    // נחשב כמה כפילויות יש
+    let duplicates = 0;
+    const seen = new Set();
+
+    for (let i = 0; i < numbers.length; i++) {
+      for (let j = 1; j <= 10; j++) {
+        const num1 = numbers[i];
+        const num2 = j;
+
+        const minNum = Math.min(num1, num2);
+        const maxNum = Math.max(num1, num2);
+        const key = `${minNum}×${maxNum}`;
+
+        if (seen.has(key)) {
+          duplicates++;
+        } else {
+          seen.add(key);
+        }
+      }
+    }
+
+    return seen.size; // מספר השאלות הייחודיות
+  };
+
+  const getCompletedQuestionsCount = () => {
+    return usedQuestions.size;
+  };
+
   // Main Game Screen
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 p-2 sm:p-4">
@@ -755,7 +792,7 @@ const MultiplicationGame = () => {
         </div>
 
         {/* Progress */}
-        <div className="mt-4 sm:mt-6 bg-white rounded-2xl shadow-lg p-3 sm:p-4">
+        {/* <div className="mt-4 sm:mt-6 bg-white rounded-2xl shadow-lg p-3 sm:p-4">
           <div className="flex justify-between items-center text-xs sm:text-sm text-gray-600">
             <span>שאלות: {questionsAnswered}</span>
             <span>תשובות נכונות: {totalCorrect}</span>
@@ -768,6 +805,56 @@ const MultiplicationGame = () => {
                 : difficulty === 'hard'
                 ? 'קשה'
                 : 'אלופות'}
+            </span>
+          </div>
+        </div> */}
+        <div
+          className="mt-4 sm:mt-6 bg-white rounded-2xl shadow-lg p-3 sm:p-4"
+          dir="rtl"
+        >
+          <div className="mb-2">
+            <div className="flex justify-between items-center text-xs sm:text-sm text-gray-600">
+              <span>שאלות: {questionsAnswered}</span>
+              <span>תשובות נכונות: {totalCorrect}</span>
+              <span>
+                רמה:
+                {difficulty === 'easy'
+                  ? 'קל'
+                  : difficulty === 'medium'
+                  ? 'בינוני'
+                  : difficulty === 'hard'
+                  ? 'קשה'
+                  : 'אלופות'}
+              </span>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+            <div
+              className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+              style={{
+                width: `${
+                  (getCompletedQuestionsCount() /
+                    getTotalQuestionsForDifficulty(difficulty)) *
+                  100
+                }%`,
+              }}
+            ></div>
+          </div>
+
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>
+              התקדמות: {getCompletedQuestionsCount()}/
+              {getTotalQuestionsForDifficulty(difficulty)}
+            </span>
+            <span>
+              {Math.round(
+                (getCompletedQuestionsCount() /
+                  getTotalQuestionsForDifficulty(difficulty)) *
+                  100
+              )}
+              %
             </span>
           </div>
         </div>
