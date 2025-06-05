@@ -29,6 +29,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: List contents of dist directory
+        run: ls -R ./dist
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/master'
