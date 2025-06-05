@@ -6,9 +6,9 @@ import {
   Clock,
   Heart,
   Lightbulb,
-  ArrowRight,
   Home,
   Award,
+  ArrowLeft,
 } from 'lucide-react';
 
 const MultiplicationGame = () => {
@@ -46,18 +46,18 @@ const MultiplicationGame = () => {
       icon: '✋',
     },
     {
-      title: '!כפולות של 5 - קל מאוד',
+      title: 'כפולות של 5 - קל מאוד!',
       content:
         'כל כפולה של 5 מסתיימת ב-0 או ב-5. אם המספר זוגי - התוצאה מסתיימת ב-0, אם אי-זוגי - מסתיימת ב-5. למשל: 5×4=20, 5×7=35',
       icon: '🖐',
     },
     {
-      title: '!כפולות של 2 - פשוט הכפילי',
+      title: 'כפולות של 2 - פשוט הכפילי!',
       content: 'כפולות של 2 זה פשוט לחבר את המספר לעצמו! 2×8 = 8+8 = 16',
       icon: '➕',
     },
     {
-      title: '!כפולות של 10 - הכי קל',
+      title: 'כפולות של 10 - הכי קל!',
       content: 'כל כפולה של 10 זה פשוט להוסיף 0 בסוף! 10×6 = 60',
       icon: '🔟',
     },
@@ -68,7 +68,7 @@ const MultiplicationGame = () => {
       icon: '🔄',
     },
     {
-      title: '(כפולות של 11 (עד 99',
+      title: 'כפולות של 11 (עד 99)',
       content:
         'כדי לכפול מספר חד-ספרתי ב-11, פשוט כתבי את המספר פעמיים! 11×4 = 44, 11×7 = 77',
       icon: '🎯',
@@ -313,69 +313,68 @@ const MultiplicationGame = () => {
               </button>
             </div>
 
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-4 sm:space-y-6 text-right">
               {/* How scoring works */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-r-4 border-blue-400 p-3 sm:p-4 rounded-xl text-right">
-                <h3 className="font-bold text-blue-700 text-base sm:text-lg mb-2">
+                <h3 className="font-bold text-blue-700 text-base sm:text-lg mb-2 text-right">
                   איך הניקוד עובד:
                 </h3>
-                <ul className="text-blue-800 text-sm sm:text-base space-y-1">
+                <ul className="text-blue-800 text-sm sm:text-base space-y-1 text-right list-none">
                   <li>• תשובה נכונה: 10 נקודות</li>
                   <li>• בונוס רצף: +2 נקודות לכל תשובה ברצף</li>
-                  <li>• בונוס השלמה: 200 נקודות (אם סיימת את כל התרגילים!)</li>
-                  <li>• לדוגמה: תשובה 1=10, תשובה 2=12, תשובה 3=14...</li>
+                  <li>• בונוס השלמה: 200 נקודות! (אם סיימת את כל התרגילים)</li>
+                  <li>לדוגמה: תשובה 1=10, תשובה 2=12, תשובה 3=14</li>
                 </ul>
               </div>
 
               {/* Easy level */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-r-4 border-green-400 p-3 sm:p-4 rounded-xl text-right">
-                <h3 className="font-bold text-green-700 text-base sm:text-lg mb-2 text-right">
-                  :🌟 רמה קלה (1, 2, 5, 10) - 13 תרגילים
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-r-4 border-green-400 p-3 sm:p-4 rounded-xl">
+                <h3 className="font-bold text-green-700 text-base sm:text-lg mb-2">
+                  🌟 רמה קלה (1, 2, 5, 10) - 13 תרגילים:
                 </h3>
-                <ul className="text-green-800 text-sm sm:text-base space-y-1 text-right list-none">
+                <ul className="text-green-800 text-sm sm:text-base space-y-1">
                   <li>• הישג ממוצע: 120-200 נקודות</li>
                   <li>• הישג טוב: 250-350 נקודות</li>
                   <li>• הישג מעולה: 400+ נקודות</li>
-                  <li>השלמה מלאה: 530+ נקודות (עם בונוס!)</li>
+                  <li>• השלמה מלאה: 530+ נקודות (עם בונוס!)</li>
                 </ul>
               </div>
 
               {/* Medium level */}
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-r-4 border-yellow-400 p-3 sm:p-4 rounded-xl text-right">
-                <h3 className="font-bold text-yellow-700 text-base sm:text-lg mb-2 text-right">
-                  :⭐ רמה בינונית (3, 4, 9) - 6 תרגילים
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-r-4 border-yellow-400 p-3 sm:p-4 rounded-xl">
+                <h3 className="font-bold text-yellow-700 text-base sm:text-lg mb-2">
+                  ⭐ רמה בינונית (3, 4, 9) - 6 תרגילים:
                 </h3>
-                <ul className="text-yellow-800 text-sm sm:text-base space-y-1 text-right list-none">
+                <ul className="text-yellow-800 text-sm sm:text-base space-y-1">
                   <li>• הישג ממוצע: 60-100 נקודות</li>
                   <li>• הישג טוב: 120-160 נקודות</li>
                   <li>• הישג מעולה: 180+ נקודות</li>
-                  <li>השלמה מלאה: 272+ נקודות (עם בונוס!)</li>
+                  <li>• השלמה מלאה: 272+ נקודות (עם בונוס!)</li>
                 </ul>
               </div>
 
               {/* Hard level */}
-              <div className="bg-gradient-to-r from-red-50 to-pink-50 border-r-4 border-red-400 p-3 sm:p-4 rounded-xl text-right">
-                <h3 className="font-bold text-red-700 text-base sm:text-lg mb-2 text-right">
-                  :🔥 רמה קשה (6, 7, 8) - 6 תרגילים
+              <div className="bg-gradient-to-r from-red-50 to-pink-50 border-r-4 border-red-400 p-3 sm:p-4 rounded-xl">
+                <h3 className="font-bold text-red-700 text-base sm:text-lg mb-2">
+                  🔥 רמה קשה (6, 7, 8) - 6 תרגילים:
                 </h3>
-                <ul className="text-red-800 text-sm sm:text-base space-y-1 text-right list-none">
+                <ul className="text-red-800 text-sm sm:text-base space-y-1">
                   <li>• הישג ממוצע: 60-100 נקודות</li>
                   <li>• הישג טוב: 120-160 נקודות</li>
                   <li>• הישג מעולה: 180+ נקודות</li>
-                  <li>השלמה מלאה: 272+ נקודות (עם בונוס!)</li>
+                  <li>• השלמה מלאה: 272+ נקודות (עם בונוס!)</li>
                 </ul>
               </div>
 
               {/* Champion level */}
-              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-r-4 border-purple-400 p-3 sm:p-4 rounded-xl text-right">
-                <h3 className="font-bold text-purple-700 text-base sm:text-lg mb-2 text-right">
-                  :👑 רמת אלופות (1-10) - 55 תרגילים
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-r-4 border-purple-400 p-3 sm:p-4 rounded-xl">
+                <h3 className="font-bold text-purple-700 text-base sm:text-lg mb-2">
+                  👑 רמת אלופות (1-10) - 55 תרגילים:
                 </h3>
-                <ul className="text-purple-800 text-sm sm:text-base space-y-1 text-right list-none">
+                <ul className="text-purple-800 text-sm sm:text-base space-y-1">
                   <li>• הישג ממוצע: 200-400 נקודות</li>
                   <li>• הישג טוב: 500-700 נקודות</li>
-                  <li>• הישג מעולה: 800+ נקודות</li>
-                  <li>השלמה מלאה: 1740+ נקודות (עם בונוס!)</li>
+                  <li>• השלמה מלאה: 1740+ נקודות (עם בונוס!)</li>
                 </ul>
               </div>
 
@@ -400,7 +399,7 @@ const MultiplicationGame = () => {
                 onClick={() => setGameMode('menu')}
                 className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg flex items-center gap-2 mx-auto text-sm sm:text-base"
               >
-                בואי נתחיל! <ArrowRight className="w-4 h-4" />
+                בואי נתחיל! <ArrowLeft className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -438,8 +437,10 @@ const MultiplicationGame = () => {
                   className="bg-gradient-to-r from-yellow-50 to-orange-50 border-r-4 border-orange-400 p-3 sm:p-4 rounded-xl text-right"
                 >
                   <div className="flex items-start gap-3 flex-row-reverse">
-                    <span className="text-2xl sm:text-3xl">{tip.icon}</span>
-                    <div className="text-right">
+                    <span className="text-2xl sm:text-3xl flex-shrink-0">
+                      {tip.icon}
+                    </span>
+                    <div className="text-right flex-1">
                       <h3 className="font-bold text-purple-700 text-sm sm:text-base mb-2 text-right">
                         {tip.title}
                       </h3>
@@ -457,7 +458,7 @@ const MultiplicationGame = () => {
                 onClick={() => setGameMode('menu')}
                 className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg flex items-center gap-2 mx-auto text-sm sm:text-base"
               >
-                !בואי נתרגל <ArrowRight className="w-4 h-4" />
+                בואי נתרגל! <ArrowLeft className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -508,7 +509,8 @@ const MultiplicationGame = () => {
             </button>
             <button
               onClick={() => setGameMode('tips')}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+                        style={{ backgroundColor: '#f97316' }}
             >
               <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5" />
               טיפים וטריקים
@@ -623,7 +625,8 @@ const MultiplicationGame = () => {
               שחק שוב
             </button>
             <button
-              onClick={() => setGameMode('tips')}
+                        onClick={() => setGameMode('tips')}
+                        style={{ backgroundColor: '#f97316' }}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -641,26 +644,39 @@ const MultiplicationGame = () => {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-3 sm:p-4 mb-4 sm:mb-6">
-          <div className="flex justify-between items-center text-xs sm:text-sm">
-            <div className="flex items-center gap-1 sm:gap-2">
-              <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
-              <span className="font-bold text-purple-600">ניקוד: {score}</span>
+          <div className="flex flex-row-reverse justify-between items-center text-xs sm:text-sm">
+            {/* Home button + lives */}
+            <div className="flex flex-row-reverse items-center gap-2">
+              <button
+                onClick={() => setGameMode('menu')}
+                className="bg-purple-500 hover:bg-purple-600 text-white p-2 rounded-xl transition-colors"
+              >
+                <Home className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-1">
+                {[...Array(3)].map((_, i) => (
+                  <Heart
+                    key={i}
+                    className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                      i < lives ? 'text-red-500 fill-current' : 'text-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
+
+            {/* Timer */}
             <div className="flex items-center gap-1 sm:gap-2">
-              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
               <span className="font-bold text-blue-600">
                 {formatTime(timeLeft)}
               </span>
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
             </div>
-            <div className="flex items-center gap-1">
-              {[...Array(3)].map((_, i) => (
-                <Heart
-                  key={i}
-                  className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                    i < lives ? 'text-red-500 fill-current' : 'text-gray-300'
-                  }`}
-                />
-              ))}
+
+            {/* Score */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="font-bold text-purple-600">ניקוד: {score}</span>
+              <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
             </div>
           </div>
 
@@ -715,7 +731,7 @@ const MultiplicationGame = () => {
                   onKeyDown={(e) =>
                     e.key === 'Enter' && userAnswer && submitAnswer()
                   }
-                  className="w-24 h-12 sm:w-32 sm:h-16 text-2xl sm:text-3xl font-bold text-center border-4 border-purple-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                  className="w-24 h-12 sm:w-32 sm:h-16 text-2xl sm:text-3xl font-bold text-center border-4 border-purple-300 rounded-xl focus:border-purple-500 focus:outline-none bg-white text-black no-spinners"
                   placeholder="?"
                   autoFocus
                 />
@@ -736,8 +752,9 @@ const MultiplicationGame = () => {
         <div className="mt-4 sm:mt-6 bg-white rounded-2xl shadow-lg p-3 sm:p-4">
           <div className="flex justify-between items-center text-xs sm:text-sm text-gray-600">
             <span>שאלות: {questionsAnswered}</span>
-            <span>נכונות: {totalCorrect}</span>
-            <span>
+            <span>תשובות נכונות: {totalCorrect}</span>
+                      <span>
+                          רמה: 
               {difficulty === 'easy'
                 ? 'קל'
                 : difficulty === 'medium'
