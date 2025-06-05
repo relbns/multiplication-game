@@ -50,7 +50,15 @@ const ShareableStats = ({
           }}
         >
           <div
-            style={{ color: '#1565c0', fontWeight: 'bold', fontSize: '16px' }}
+            style={{
+              color: '#1565c0',
+              fontWeight: 'bold',
+              fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '38px', // Ensure consistent height
+            }}
           >
             הניקוד שלך: {score}
           </div>
@@ -65,7 +73,15 @@ const ShareableStats = ({
           }}
         >
           <div
-            style={{ color: '#2e7d32', fontWeight: 'bold', fontSize: '16px' }}
+            style={{
+              color: '#2e7d32',
+              fontWeight: 'bold',
+              fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '38px', // Ensure consistent height
+            }}
           >
             תשובות נכונות: {totalCorrect}
           </div>
@@ -80,7 +96,15 @@ const ShareableStats = ({
           }}
         >
           <div
-            style={{ color: '#f57c00', fontWeight: 'bold', fontSize: '16px' }}
+            style={{
+              color: '#f57c00',
+              fontWeight: 'bold',
+              fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '38px', // Ensure consistent height
+            }}
           >
             הרצף הטוב ביותר: {bestStreak}
           </div>
@@ -96,7 +120,15 @@ const ShareableStats = ({
             }}
           >
             <div
-              style={{ color: '#7b1fa2', fontWeight: 'bold', fontSize: '16px' }}
+              style={{
+                color: '#7b1fa2',
+                fontWeight: 'bold',
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '38px', // Ensure consistent height
+              }}
             >
               דיוק: {accuracy}%
             </div>
@@ -113,6 +145,10 @@ const ShareableStats = ({
               fontWeight: 'bold',
               fontSize: '16px',
               marginTop: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '38px', // Ensure consistent height
             }}
           >
             🌟 ביצוע מעולה! את אלופה אמיתית! 🌟
