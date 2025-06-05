@@ -741,8 +741,10 @@ const MultiplicationGame = () => {
               </p>
               {streak > 2 && !feedback.includes('הייתה טעות') && (
                 <div className="animate-bounce">
-                  <p className="text-sm sm:text-base text-orange-600 font-bold">
-                    🔥 !את על גל 🔥
+                  <p
+                    className="text-sm sm:text-base font-bold force-text-orange"
+                  >
+                    🔥 את על הגל! 🔥
                   </p>
                 </div>
               )}
@@ -792,22 +794,6 @@ const MultiplicationGame = () => {
         </div>
 
         {/* Progress */}
-        {/* <div className="mt-4 sm:mt-6 bg-white rounded-2xl shadow-lg p-3 sm:p-4">
-          <div className="flex justify-between items-center text-xs sm:text-sm text-gray-600">
-            <span>שאלות: {questionsAnswered}</span>
-            <span>תשובות נכונות: {totalCorrect}</span>
-            <span>
-              רמה:
-              {difficulty === 'easy'
-                ? 'קל'
-                : difficulty === 'medium'
-                ? 'בינוני'
-                : difficulty === 'hard'
-                ? 'קשה'
-                : 'אלופות'}
-            </span>
-          </div>
-        </div> */}
         <div
           className="mt-4 sm:mt-6 bg-white rounded-2xl shadow-lg p-3 sm:p-4"
           dir="rtl"
