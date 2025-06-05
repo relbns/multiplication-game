@@ -1,24 +1,54 @@
+// shareUtils.js
 import html2canvas from 'html2canvas';
 
 export const shareResultsAsImage = async (elementRef, gameData, callbacks = {}) => {
     const {
         score,
         difficulty,
+        totalCorrect,
+        bestStreak,
+        accuracy,
         setFeedback,
         setShowFeedback
     } = gameData;
 
     try {
+        // Ensure the element is properly positioned before capture
+        const element = elementRef.current;
+
+        // Temporarily add some styling to ensure proper centering
+        const originalStyle = {
+            position: element.style.position,
+            transform: element.style.transform,
+            margin: element.style.margin
+        };
+
+        element.style.position = 'relative';
+        element.style.transform = 'none';
+        element.style.margin = 'auto';
+
+        // Wait a brief moment for styles to apply
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         // Capture the results component as an image
-        const canvas = await html2canvas(elementRef.current, {
+        const canvas = await html2canvas(element, {
             backgroundColor: '#ffffff',
             scale: 2, // Higher quality
             useCORS: true,
             allowTaint: true,
             logging: false,
-            width: elementRef.current.offsetWidth,
-            height: elementRef.current.offsetHeight,
+            scrollX: 0,
+            scrollY: 0,
+            x: 0,
+            y: 0,
+            width: element.offsetWidth,
+            height: element.offsetHeight,
         });
+
+        // Restore original styles
+        element.style.position = originalStyle.position;
+        element.style.transform = originalStyle.transform;
+        element.style.margin = originalStyle.margin;
 
         // Convert canvas to blob
         canvas.toBlob(async (blob) => {

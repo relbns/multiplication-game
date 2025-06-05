@@ -11,9 +11,10 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { shareResultsAsImage } from '../common/utils';
+import ShareableStats from './ShareableStats';
 
 const MultiplicationGame = () => {
-  const GAME_TIME = 30; // 5 minutes in seconds (300)
+  const GAME_TIME = 300; // 5 minutes in seconds
   const resultsRef = useRef(null);
   const [gameMode, setGameMode] = useState('menu');
   const [currentQuestion, setCurrentQuestion] = useState({ num1: 0, num2: 0 });
@@ -102,30 +103,6 @@ const MultiplicationGame = () => {
     };
 
     shareResultsAsImage(resultsRef, gameData);
-  };
-
-  const shareResults_old = () => {
-    const difficultyText =
-      difficulty === 'easy'
-        ? 'קל'
-        : difficulty === 'medium'
-        ? 'בינוני'
-        : difficulty === 'hard'
-        ? 'קשה'
-        : 'אלופות';
-    const shareText = `השגתי ${score} נקודות במשחק לוח הכפל! 🎯\nרמה: ${difficultyText}\nתשובות נכונות: ${totalCorrect}\nרצף הטוב ביותר: ${bestStreak}\n\nבואו נתאמן יחד! 🌟`;
-
-    if (navigator.share) {
-      navigator.share({
-        title: 'משחק לוח הכפל',
-        text: shareText,
-      });
-    } else {
-      navigator.clipboard.writeText(shareText);
-      setFeedback('ההישג הועתק ללוח! 📋');
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
-    }
   };
 
   const generateAllPossibleQuestions = (allowedNumbers) => {
@@ -577,10 +554,7 @@ const MultiplicationGame = () => {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 flex items-center justify-center p-2 sm:p-4">
-        <div
-          ref={resultsRef}
-          className="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 max-w-sm sm:max-w-md w-full text-center"
-        >
+        <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 max-w-sm sm:max-w-md w-full text-center">
           <Award className="w-12 h-12 sm:w-16 sm:h-16 text-yellow-500 mx-auto mb-3 sm:mb-4" />
           <h2 className="text-xl sm:text-2xl font-bold text-purple-600 mb-1">
             {totalCorrect >= questionsAnswered * 0.8
@@ -620,7 +594,19 @@ const MultiplicationGame = () => {
               </div>
             )}
           </div>
-
+          <div
+            style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}
+          >
+            <div ref={resultsRef}>
+              <ShareableStats
+                score={score}
+                difficulty={difficulty}
+                totalCorrect={totalCorrect}
+                bestStreak={bestStreak}
+                accuracy={accuracy}
+              />
+            </div>
+          </div>
           {accuracy >= 80 && (
             <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-yellow-200 to-orange-200 rounded-xl border-2 border-yellow-400">
               <p className="text-orange-800 font-bold text-sm sm:text-base">
@@ -631,7 +617,7 @@ const MultiplicationGame = () => {
 
           <div className="space-y-2 sm:space-y-3">
             <button
-              onClick={()=>shareResults(accuracy)}
+              onClick={() => shareResults(accuracy)}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <span>📱</span>
