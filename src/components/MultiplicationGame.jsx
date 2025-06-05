@@ -14,7 +14,7 @@ import { shareResultsAsImage } from '../common/utils';
 import ShareableStats from './ShareableStats';
 
 const MultiplicationGame = () => {
-  const GAME_TIME = 30; // 5 minutes in seconds
+  const GAME_TIME = 300; // 5 minutes in seconds
   const resultsRef = useRef(null);
   const [gameMode, setGameMode] = useState('menu');
   const [currentQuestion, setCurrentQuestion] = useState({ num1: 0, num2: 0 });
@@ -319,7 +319,7 @@ const MultiplicationGame = () => {
               {/* Easy level */}
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-r-4 border-green-400 p-3 sm:p-4 rounded-xl">
                 <h3 className="font-bold text-green-700 text-base sm:text-lg mb-2">
-                  🌟 רמה קלה (1, 2, 5, 10) - 13 תרגילים:
+                  🌟 רמה קלה (1, 2, 5, 10) - 34 תרגילים:
                 </h3>
                 <ul className="text-green-800 text-sm sm:text-base space-y-1">
                   <li>• הישג ממוצע: 120-200 נקודות</li>
@@ -332,7 +332,7 @@ const MultiplicationGame = () => {
               {/* Medium level */}
               <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-r-4 border-yellow-400 p-3 sm:p-4 rounded-xl">
                 <h3 className="font-bold text-yellow-700 text-base sm:text-lg mb-2">
-                  ⭐ רמה בינונית (3, 4, 9) - 6 תרגילים:
+                  ⭐ רמה בינונית (3, 4, 9) - 27 תרגילים:
                 </h3>
                 <ul className="text-yellow-800 text-sm sm:text-base space-y-1">
                   <li>• הישג ממוצע: 60-100 נקודות</li>
@@ -345,7 +345,7 @@ const MultiplicationGame = () => {
               {/* Hard level */}
               <div className="bg-gradient-to-r from-red-50 to-pink-50 border-r-4 border-red-400 p-3 sm:p-4 rounded-xl">
                 <h3 className="font-bold text-red-700 text-base sm:text-lg mb-2">
-                  🔥 רמה קשה (6, 7, 8) - 6 תרגילים:
+                  🔥 רמה קשה (6, 7, 8) - 27 תרגילים:
                 </h3>
                 <ul className="text-red-800 text-sm sm:text-base space-y-1">
                   <li>• הישג ממוצע: 60-100 נקודות</li>
