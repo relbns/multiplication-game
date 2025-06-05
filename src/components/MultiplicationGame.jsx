@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Star,
   Trophy,
@@ -10,14 +10,17 @@ import {
   Award,
   ArrowLeft,
 } from 'lucide-react';
+import { shareResultsAsImage } from '../common/utils';
 
 const MultiplicationGame = () => {
+  const GAME_TIME = 30; // 5 minutes in seconds (300)
+  const resultsRef = useRef(null);
   const [gameMode, setGameMode] = useState('menu');
   const [currentQuestion, setCurrentQuestion] = useState({ num1: 0, num2: 0 });
   const [userAnswer, setUserAnswer] = useState('');
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
-  const [timeLeft, setTimeLeft] = useState(300);
+  const [timeLeft, setTimeLeft] = useState(GAME_TIME);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
@@ -87,7 +90,21 @@ const MultiplicationGame = () => {
     },
   ];
 
-  const shareResults = () => {
+  const shareResults = (accuracy) => {
+    const gameData = {
+      score,
+      difficulty,
+      totalCorrect,
+      bestStreak,
+      accuracy,
+      setFeedback,
+      setShowFeedback,
+    };
+
+    shareResultsAsImage(resultsRef, gameData);
+  };
+
+  const shareResults_old = () => {
     const difficultyText =
       difficulty === 'easy'
         ? 'קל'
@@ -213,7 +230,7 @@ const MultiplicationGame = () => {
     setGameMode('playing');
     setScore(0);
     setLives(3);
-    setTimeLeft(300);
+    setTimeLeft(GAME_TIME);
     setQuestionsAnswered(0);
     setStreak(0);
     setUserAnswer('');
@@ -283,7 +300,7 @@ const MultiplicationGame = () => {
     setGameMode('menu');
     setScore(0);
     setLives(3);
-    setTimeLeft(300);
+    setTimeLeft(GAME_TIME);
     setQuestionsAnswered(0);
     setStreak(0);
     setUserAnswer('');
@@ -509,8 +526,8 @@ const MultiplicationGame = () => {
             </button>
             <button
               onClick={() => setGameMode('tips')}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
-                        style={{ backgroundColor: '#f97316' }}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+              style={{ backgroundColor: '#f97316' }}
             >
               <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5" />
               טיפים וטריקים
@@ -560,7 +577,10 @@ const MultiplicationGame = () => {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 flex items-center justify-center p-2 sm:p-4">
-        <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 max-w-sm sm:max-w-md w-full text-center">
+        <div
+          ref={resultsRef}
+          className="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 max-w-sm sm:max-w-md w-full text-center"
+        >
           <Award className="w-12 h-12 sm:w-16 sm:h-16 text-yellow-500 mx-auto mb-3 sm:mb-4" />
           <h2 className="text-xl sm:text-2xl font-bold text-purple-600 mb-1">
             {totalCorrect >= questionsAnswered * 0.8
@@ -611,7 +631,7 @@ const MultiplicationGame = () => {
 
           <div className="space-y-2 sm:space-y-3">
             <button
-              onClick={shareResults}
+              onClick={()=>shareResults(accuracy)}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <span>📱</span>
@@ -625,8 +645,8 @@ const MultiplicationGame = () => {
               שחק שוב
             </button>
             <button
-                        onClick={() => setGameMode('tips')}
-                        style={{ backgroundColor: '#f97316' }}
+              onClick={() => setGameMode('tips')}
+              style={{ backgroundColor: '#f97316' }}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -753,8 +773,8 @@ const MultiplicationGame = () => {
           <div className="flex justify-between items-center text-xs sm:text-sm text-gray-600">
             <span>שאלות: {questionsAnswered}</span>
             <span>תשובות נכונות: {totalCorrect}</span>
-                      <span>
-                          רמה: 
+            <span>
+              רמה:
               {difficulty === 'easy'
                 ? 'קל'
                 : difficulty === 'medium'
