@@ -1,0 +1,756 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Star,
+  Trophy,
+  RefreshCw,
+  Clock,
+  Heart,
+  Lightbulb,
+  ArrowRight,
+  Home,
+  Award,
+} from 'lucide-react';
+
+const MultiplicationGame = () => {
+  const [gameMode, setGameMode] = useState('menu');
+  const [currentQuestion, setCurrentQuestion] = useState({ num1: 0, num2: 0 });
+  const [userAnswer, setUserAnswer] = useState('');
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [timeLeft, setTimeLeft] = useState(300);
+  const [questionsAnswered, setQuestionsAnswered] = useState(0);
+  const [feedback, setFeedback] = useState('');
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [difficulty, setDifficulty] = useState('easy');
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+  const [totalCorrect, setTotalCorrect] = useState(0);
+  const [usedQuestions, setUsedQuestions] = useState(new Set());
+
+  const encouragingMessages = [
+    '!מדהים! את גאונית 🌟',
+    '!כל הכבוד! ממשיכים ככה 🎉',
+    '!וואו! איזה כוח 💪',
+    '!מושלם! את על הדרך הנכונה ⭐',
+    '!יופי! את לומדת מהר 🚀',
+    '!נהדר! המוח שלך עובד מצוין 🧠',
+    '!ברבו! תמשיכי ככה 👑',
+    '!מעולה! את פשוט מדהימה ✨',
+  ];
+
+  const tips = [
+    {
+      title: 'טריק האצבעות לכפולות של 9',
+      content:
+        'הרימי 10 אצבעות. להכפלה 9×7, הורידי את האצבע ה-7. משמאל לאצבע שהורדת יש 6 אצבעות (עשרות), מימין יש 3 אצבעות (יחידות) = 63!',
+      icon: '✋',
+    },
+    {
+      title: '!כפולות של 5 - קל מאוד',
+      content:
+        'כל כפולה של 5 מסתיימת ב-0 או ב-5. אם המספר זוגי - התוצאה מסתיימת ב-0, אם אי-זוגי - מסתיימת ב-5. למשל: 5×4=20, 5×7=35',
+      icon: '🖐',
+    },
+    {
+      title: '!כפולות של 2 - פשוט הכפילי',
+      content: 'כפולות של 2 זה פשוט לחבר את המספר לעצמו! 2×8 = 8+8 = 16',
+      icon: '➕',
+    },
+    {
+      title: '!כפולות של 10 - הכי קל',
+      content: 'כל כפולה של 10 זה פשוט להוסיף 0 בסוף! 10×6 = 60',
+      icon: '🔟',
+    },
+    {
+      title: 'הסימטריה של לוח הכפל',
+      content:
+        'זכרי: 3×7 זה אותו דבר כמו 7×3! אם את יודעת אחד, את יודעת את השני!',
+      icon: '🔄',
+    },
+    {
+      title: '(כפולות של 11 (עד 99',
+      content:
+        'כדי לכפול מספר חד-ספרתי ב-11, פשוט כתבי את המספר פעמיים! 11×4 = 44, 11×7 = 77',
+      icon: '🎯',
+    },
+    {
+      title: 'כפולות של 6 = כפולות של 3 ×2',
+      content:
+        'אם את יודעת את כפולות של 3, כפולות של 6 זה פשוט להכפיל פי 2! 6×4 = (3×4)×2 = 12×2 = 24',
+      icon: '✖️',
+    },
+    {
+      title: "השיטה של 'בנייה'",
+      content:
+        'לא זוכרת 7×8? תחשבי: 7×7=49, ועוד 7 אחד = 49+7=56! בני על מה שאת כבר יודעת!',
+      icon: '🏗️',
+    },
+  ];
+
+  const shareResults = () => {
+    const difficultyText =
+      difficulty === 'easy'
+        ? 'קל'
+        : difficulty === 'medium'
+        ? 'בינוני'
+        : difficulty === 'hard'
+        ? 'קשה'
+        : 'אלופות';
+    const shareText = `השגתי ${score} נקודות במשחק לוח הכפל! 🎯\nרמה: ${difficultyText}\nתשובות נכונות: ${totalCorrect}\nרצף הטוב ביותר: ${bestStreak}\n\nבואו נתאמן יחד! 🌟`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: 'משחק לוח הכפל',
+        text: shareText,
+      });
+    } else {
+      navigator.clipboard.writeText(shareText);
+      setFeedback('ההישג הועתק ללוח! 📋');
+      setShowFeedback(true);
+      setTimeout(() => setShowFeedback(false), 2000);
+    }
+  };
+
+  const generateAllPossibleQuestions = (allowedNumbers) => {
+    const questions = [];
+
+    for (let i = 0; i < allowedNumbers.length; i++) {
+      for (let j = 0; j < allowedNumbers.length; j++) {
+        const num1 = allowedNumbers[i];
+        const num2 = allowedNumbers[j];
+
+        // Create normalized key (smaller number first unless they're equal)
+        const minNum = Math.min(num1, num2);
+        const maxNum = Math.max(num1, num2);
+        const questionKey =
+          num1 === num2 ? `${num1}×${num2}` : `${minNum}×${maxNum}`;
+
+        // Add both variations if numbers are different
+        if (num1 !== num2) {
+          questions.push({ num1, num2, key: questionKey });
+          questions.push({ num1: num2, num2: num1, key: questionKey });
+        } else {
+          questions.push({ num1, num2, key: questionKey });
+        }
+      }
+    }
+
+    return questions;
+  };
+
+  const generateQuestion = () => {
+    let allowedNumbers;
+
+    switch (difficulty) {
+      case 'easy':
+        allowedNumbers = [1, 2, 5, 10];
+        break;
+      case 'medium':
+        allowedNumbers = [3, 4, 9];
+        break;
+      case 'hard':
+        allowedNumbers = [6, 7, 8];
+        break;
+      case 'champion':
+        allowedNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        break;
+      default:
+        allowedNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    }
+
+    // Generate all possible questions for this difficulty
+    const allQuestions = generateAllPossibleQuestions(allowedNumbers);
+
+    // Filter out already used question keys
+    const availableQuestions = allQuestions.filter(
+      (q) => !usedQuestions.has(q.key)
+    );
+
+    // Check if we've completed all possible questions
+    if (availableQuestions.length === 0) {
+      // All questions completed! End game with bonus
+      const completionBonus = 200;
+      setScore((prev) => prev + completionBonus);
+      setFeedback(
+        `🎉 !מדהים! השלמת את כל התרגילים! בונוס השלמה: ${completionBonus} נקודות 🎉`
+      );
+      setShowFeedback(true);
+      setTimeout(() => setGameMode('gameOver'), 3000);
+      return;
+    }
+
+    // Pick a random question from available ones
+    const randomQuestion =
+      availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+
+    // Add to used questions
+    setUsedQuestions((prev) => new Set([...prev, randomQuestion.key]));
+
+    setCurrentQuestion({
+      num1: randomQuestion.num1,
+      num2: randomQuestion.num2,
+    });
+  };
+
+  useEffect(() => {
+    let timer;
+    if (gameMode === 'playing' && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            setGameMode('gameOver');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [gameMode, timeLeft]);
+
+  const startGame = (selectedDifficulty) => {
+    setDifficulty(selectedDifficulty);
+    setGameMode('playing');
+    setScore(0);
+    setLives(3);
+    setTimeLeft(300);
+    setQuestionsAnswered(0);
+    setStreak(0);
+    setUserAnswer('');
+    setUsedQuestions(new Set());
+    generateQuestion();
+  };
+
+  const submitAnswer = () => {
+    const correctAnswer = currentQuestion.num1 * currentQuestion.num2;
+    const userNum = parseInt(userAnswer);
+
+    if (userNum === correctAnswer) {
+      const points = 10 + streak * 2;
+      setScore((prev) => prev + points);
+      setStreak((prev) => prev + 1);
+      setBestStreak((prev) => Math.max(prev, streak + 1));
+      setTotalCorrect((prev) => prev + 1);
+
+      const randomMessage =
+        encouragingMessages[
+          Math.floor(Math.random() * encouragingMessages.length)
+        ];
+      setFeedback(randomMessage);
+      setShowFeedback(true);
+
+      // Continue to next question after correct answer
+      setQuestionsAnswered((prev) => prev + 1);
+      setUserAnswer('');
+
+      setTimeout(() => {
+        setShowFeedback(false);
+        generateQuestion();
+      }, 2000);
+    } else {
+      setLives((prev) => prev - 1);
+      setStreak(0);
+      setFeedback(
+        `הייתה טעות קטנה! התשובה הנכונה היא ${correctAnswer}. תמשיכי - את בדרך הנכונה 💪`
+      );
+      setShowFeedback(true);
+
+      if (lives <= 1) {
+        setTimeout(() => setGameMode('gameOver'), 3000);
+        return;
+      }
+
+      setQuestionsAnswered((prev) => prev + 1);
+      setUserAnswer('');
+
+      // Wait for user confirmation for wrong answers
+      // Will continue when user clicks "הבנתי, בואי נמשיך"
+    }
+  };
+
+  const continueAfterWrongAnswer = () => {
+    setShowFeedback(false);
+    generateQuestion();
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const resetGame = () => {
+    setGameMode('menu');
+    setScore(0);
+    setLives(3);
+    setTimeLeft(300);
+    setQuestionsAnswered(0);
+    setStreak(0);
+    setUserAnswer('');
+    setFeedback('');
+    setShowFeedback(false);
+    setUsedQuestions(new Set());
+  };
+
+  // Scoring Guide Screen
+  if (gameMode === 'scoring') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 p-2 sm:p-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500" />
+                <h2 className="text-xl sm:text-2xl font-bold text-purple-600">
+                  מדריך ניקוד
+                </h2>
+              </div>
+              <button
+                onClick={() => setGameMode('menu')}
+                className="bg-purple-500 hover:bg-purple-600 text-white p-2 rounded-xl transition-colors"
+              >
+                <Home className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 sm:space-y-6">
+              {/* How scoring works */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-r-4 border-blue-400 p-3 sm:p-4 rounded-xl text-right">
+                <h3 className="font-bold text-blue-700 text-base sm:text-lg mb-2">
+                  איך הניקוד עובד:
+                </h3>
+                <ul className="text-blue-800 text-sm sm:text-base space-y-1">
+                  <li>• תשובה נכונה: 10 נקודות</li>
+                  <li>• בונוס רצף: +2 נקודות לכל תשובה ברצף</li>
+                  <li>• בונוס השלמה: 200 נקודות (אם סיימת את כל התרגילים!)</li>
+                  <li>• לדוגמה: תשובה 1=10, תשובה 2=12, תשובה 3=14...</li>
+                </ul>
+              </div>
+
+              {/* Easy level */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-r-4 border-green-400 p-3 sm:p-4 rounded-xl text-right">
+                <h3 className="font-bold text-green-700 text-base sm:text-lg mb-2 text-right">
+                  :🌟 רמה קלה (1, 2, 5, 10) - 13 תרגילים
+                </h3>
+                <ul className="text-green-800 text-sm sm:text-base space-y-1 text-right list-none">
+                  <li>• הישג ממוצע: 120-200 נקודות</li>
+                  <li>• הישג טוב: 250-350 נקודות</li>
+                  <li>• הישג מעולה: 400+ נקודות</li>
+                  <li>השלמה מלאה: 530+ נקודות (עם בונוס!)</li>
+                </ul>
+              </div>
+
+              {/* Medium level */}
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-r-4 border-yellow-400 p-3 sm:p-4 rounded-xl text-right">
+                <h3 className="font-bold text-yellow-700 text-base sm:text-lg mb-2 text-right">
+                  :⭐ רמה בינונית (3, 4, 9) - 6 תרגילים
+                </h3>
+                <ul className="text-yellow-800 text-sm sm:text-base space-y-1 text-right list-none">
+                  <li>• הישג ממוצע: 60-100 נקודות</li>
+                  <li>• הישג טוב: 120-160 נקודות</li>
+                  <li>• הישג מעולה: 180+ נקודות</li>
+                  <li>השלמה מלאה: 272+ נקודות (עם בונוס!)</li>
+                </ul>
+              </div>
+
+              {/* Hard level */}
+              <div className="bg-gradient-to-r from-red-50 to-pink-50 border-r-4 border-red-400 p-3 sm:p-4 rounded-xl text-right">
+                <h3 className="font-bold text-red-700 text-base sm:text-lg mb-2 text-right">
+                  :🔥 רמה קשה (6, 7, 8) - 6 תרגילים
+                </h3>
+                <ul className="text-red-800 text-sm sm:text-base space-y-1 text-right list-none">
+                  <li>• הישג ממוצע: 60-100 נקודות</li>
+                  <li>• הישג טוב: 120-160 נקודות</li>
+                  <li>• הישג מעולה: 180+ נקודות</li>
+                  <li>השלמה מלאה: 272+ נקודות (עם בונוס!)</li>
+                </ul>
+              </div>
+
+              {/* Champion level */}
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-r-4 border-purple-400 p-3 sm:p-4 rounded-xl text-right">
+                <h3 className="font-bold text-purple-700 text-base sm:text-lg mb-2 text-right">
+                  :👑 רמת אלופות (1-10) - 55 תרגילים
+                </h3>
+                <ul className="text-purple-800 text-sm sm:text-base space-y-1 text-right list-none">
+                  <li>• הישג ממוצע: 200-400 נקודות</li>
+                  <li>• הישג טוב: 500-700 נקודות</li>
+                  <li>• הישג מעולה: 800+ נקודות</li>
+                  <li>השלמה מלאה: 1740+ נקודות (עם בונוס!)</li>
+                </ul>
+              </div>
+
+              {/* Tips */}
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-r-4 border-purple-400 p-3 sm:p-4 rounded-xl">
+                <h3 className="font-bold text-purple-700 text-base sm:text-lg mb-2">
+                  💡 טיפים להישג טוב:
+                </h3>
+                <ul className="text-purple-800 text-sm sm:text-base space-y-1">
+                  <li>• התחילי מהרמה הקלה לבניית ביטחון</li>
+                  <li>• שמרי על רצפים ארוכים לבונוס גבוה</li>
+                  <li>• השתמשי בטיפים וטריקים שלמדת</li>
+                  <li>• אל תמהרי - דיוק חשוב יותר ממהירות</li>
+                  <li>• נסי להשלים את כל התרגילים לבונוס של 200 נקודות!</li>
+                  <li>• רמת האלופות היא האתגר הגדול ביותר!</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-4 sm:mt-6 text-center">
+              <button
+                onClick={() => setGameMode('menu')}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg flex items-center gap-2 mx-auto text-sm sm:text-base"
+              >
+                בואי נתחיל! <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (gameMode === 'tips') {
+    return (
+      <div
+        className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 p-2 sm:p-4"
+        dir="rtl"
+      >
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500" />
+                <h2 className="text-xl sm:text-2xl font-bold text-purple-600">
+                  טיפים וטריקים
+                </h2>
+              </div>
+              <button
+                onClick={() => setGameMode('menu')}
+                className="bg-purple-500 hover:bg-purple-600 text-white p-2 rounded-xl transition-colors"
+              >
+                <Home className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 sm:space-y-4 max-h-96 sm:max-h-screen overflow-y-auto">
+              {tips.map((tip, index) => (
+                <div
+                  key={index}
+                  className="bg-gradient-to-r from-yellow-50 to-orange-50 border-r-4 border-orange-400 p-3 sm:p-4 rounded-xl text-right"
+                >
+                  <div className="flex items-start gap-3 flex-row-reverse">
+                    <span className="text-2xl sm:text-3xl">{tip.icon}</span>
+                    <div className="text-right">
+                      <h3 className="font-bold text-purple-700 text-sm sm:text-base mb-2 text-right">
+                        {tip.title}
+                      </h3>
+                      <p className="text-gray-700 text-xs sm:text-sm leading-relaxed text-right">
+                        {tip.content}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 sm:mt-6 text-center">
+              <button
+                onClick={() => setGameMode('menu')}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg flex items-center gap-2 mx-auto text-sm sm:text-base"
+              >
+                !בואי נתרגל <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Menu Screen
+  if (gameMode === 'menu') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 flex items-center justify-center p-2 sm:p-4">
+        <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 max-w-sm sm:max-w-md w-full text-center">
+          <div className="mb-4 sm:mb-6">
+            <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-yellow-500 mx-auto mb-3 sm:mb-4" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-purple-600 mb-2">
+              לוח הכפל
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600">
+              בואי נתאמן יחד ונהיה אלופות!
+            </p>
+          </div>
+
+          <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+            <button
+              onClick={() => startGame('easy')}
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors shadow-lg text-sm sm:text-base"
+            >
+              🌟 קל (1, 2, 5, 10)
+            </button>
+            <button
+              onClick={() => startGame('medium')}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors shadow-lg text-sm sm:text-base"
+            >
+              ⭐ בינוני (3, 4, 9)
+            </button>
+            <button
+              onClick={() => startGame('hard')}
+              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors shadow-lg text-sm sm:text-base"
+            >
+              🔥 קשה (6, 7, 8)
+            </button>
+            <button
+              onClick={() => startGame('champion')}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors shadow-lg text-sm sm:text-base"
+            >
+              👑 אלופות (1-10)
+            </button>
+            <button
+              onClick={() => setGameMode('tips')}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+            >
+              <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5" />
+              טיפים וטריקים
+            </button>
+            <button
+              onClick={() => setGameMode('scoring')}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+            >
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
+              מדריך ניקוד
+            </button>
+          </div>
+
+          {(bestStreak > 0 || totalCorrect > 0) && (
+            <div className="space-y-2 p-3 sm:p-4 bg-yellow-100 rounded-xl">
+              {bestStreak > 0 && (
+                <p className="text-yellow-800 font-bold text-xs sm:text-sm">
+                  🏆 השיא שלך: {bestStreak} ברציפות!
+                </p>
+              )}
+              {totalCorrect > 0 && (
+                <p className="text-yellow-800 font-bold text-xs sm:text-sm">
+                  ⭐ סה"כ תשובות נכונות: {totalCorrect}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Game Over Screen
+  if (gameMode === 'gameOver') {
+    const accuracy =
+      questionsAnswered > 0
+        ? Math.round((totalCorrect / (totalCorrect + (3 - lives))) * 100)
+        : 0;
+    const difficultyText =
+      difficulty === 'easy'
+        ? 'קל'
+        : difficulty === 'medium'
+        ? 'בינוני'
+        : difficulty === 'hard'
+        ? 'קשה'
+        : 'אלופות';
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 flex items-center justify-center p-2 sm:p-4">
+        <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 max-w-sm sm:max-w-md w-full text-center">
+          <Award className="w-12 h-12 sm:w-16 sm:h-16 text-yellow-500 mx-auto mb-3 sm:mb-4" />
+          <h2 className="text-xl sm:text-2xl font-bold text-purple-600 mb-1">
+            {totalCorrect >= questionsAnswered * 0.8
+              ? 'מדהים! 🎉'
+              : totalCorrect >= questionsAnswered * 0.6
+              ? 'כל הכבוד! 👏'
+              : 'התחלה מעולה! 💪'}
+          </h2>
+          <p className="text-sm text-gray-600 mb-2">
+            מבחן ברמה {difficultyText}
+          </p>
+          <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
+            ממשיכים להתקדם!
+          </p>
+
+          <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+            <div className="p-2 sm:p-3 bg-blue-100 rounded-xl">
+              <p className="text-blue-800 font-bold text-sm sm:text-base">
+                הניקוד שלך: {score}
+              </p>
+            </div>
+            <div className="p-2 sm:p-3 bg-green-100 rounded-xl">
+              <p className="text-green-800 font-bold text-sm sm:text-base">
+                תשובות נכונות: {totalCorrect}
+              </p>
+            </div>
+            <div className="p-2 sm:p-3 bg-yellow-100 rounded-xl">
+              <p className="text-yellow-800 font-bold text-sm sm:text-base">
+                הרצף הטוב ביותר: {bestStreak}
+              </p>
+            </div>
+            {accuracy > 0 && (
+              <div className="p-2 sm:p-3 bg-purple-100 rounded-xl">
+                <p className="text-purple-800 font-bold text-sm sm:text-base">
+                  דיוק: {accuracy}%
+                </p>
+              </div>
+            )}
+          </div>
+
+          {accuracy >= 80 && (
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-yellow-200 to-orange-200 rounded-xl border-2 border-yellow-400">
+              <p className="text-orange-800 font-bold text-sm sm:text-base">
+                🌟 ביצוע מעולה! את אלופה אמיתית! 🌟
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-2 sm:space-y-3">
+            <button
+              onClick={shareResults}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+            >
+              <span>📱</span>
+              שתף את ההישג
+            </button>
+            <button
+              onClick={resetGame}
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+            >
+              <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
+              שחק שוב
+            </button>
+            <button
+              onClick={() => setGameMode('tips')}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 sm:px-6 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+            >
+              <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5" />
+              בואי נלמד טריקים
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Main Game Screen
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 p-2 sm:p-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-lg p-3 sm:p-4 mb-4 sm:mb-6">
+          <div className="flex justify-between items-center text-xs sm:text-sm">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+              <span className="font-bold text-purple-600">ניקוד: {score}</span>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+              <span className="font-bold text-blue-600">
+                {formatTime(timeLeft)}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              {[...Array(3)].map((_, i) => (
+                <Heart
+                  key={i}
+                  className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                    i < lives ? 'text-red-500 fill-current' : 'text-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {streak > 0 && (
+            <div className="mt-2 text-center">
+              <span className="bg-yellow-100 text-yellow-800 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold">
+                🔥 רצף: {streak}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Question Card */}
+        <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 text-center">
+          {showFeedback ? (
+            <div className="py-6 sm:py-8">
+              <p className="text-lg sm:text-2xl font-bold text-purple-600 mb-2 sm:mb-4">
+                {feedback}
+              </p>
+              {streak > 2 && !feedback.includes('הייתה טעות') && (
+                <div className="animate-bounce">
+                  <p className="text-sm sm:text-base text-orange-600 font-bold">
+                    🔥 !את על גל 🔥
+                  </p>
+                </div>
+              )}
+
+              {/* Show continue button for wrong answers */}
+              {feedback.includes('הייתה טעות') && (
+                <button
+                  onClick={continueAfterWrongAnswer}
+                  className="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg text-sm sm:text-base"
+                >
+                  !הבנתי, בואי נמשיך 👍
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="mb-6 sm:mb-8">
+                <p className="text-4xl sm:text-6xl font-bold text-purple-600 mb-4 sm:mb-6">
+                  {currentQuestion.num1} × {currentQuestion.num2}
+                </p>
+                <p className="text-base sm:text-xl text-gray-600">מה התוצאה?</p>
+              </div>
+
+              <div className="mb-4 sm:mb-6">
+                <input
+                  type="number"
+                  value={userAnswer}
+                  onChange={(e) => setUserAnswer(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === 'Enter' && userAnswer && submitAnswer()
+                  }
+                  className="w-24 h-12 sm:w-32 sm:h-16 text-2xl sm:text-3xl font-bold text-center border-4 border-purple-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                  placeholder="?"
+                  autoFocus
+                />
+              </div>
+
+              <button
+                onClick={submitAnswer}
+                disabled={!userAnswer}
+                className="bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-colors shadow-lg text-base sm:text-xl"
+              >
+                בדוק תשובה
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Progress */}
+        <div className="mt-4 sm:mt-6 bg-white rounded-2xl shadow-lg p-3 sm:p-4">
+          <div className="flex justify-between items-center text-xs sm:text-sm text-gray-600">
+            <span>שאלות: {questionsAnswered}</span>
+            <span>נכונות: {totalCorrect}</span>
+            <span>
+              {difficulty === 'easy'
+                ? 'קל'
+                : difficulty === 'medium'
+                ? 'בינוני'
+                : difficulty === 'hard'
+                ? 'קשה'
+                : 'אלופות'}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MultiplicationGame;
