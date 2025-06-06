@@ -127,10 +127,11 @@ const MultiplicationGame = () => {
     return questions;
   };
 
-  const generateQuestion = () => {
+  const generateQuestion = (currentLevelDifficulty) => {
     let allowedNumbers;
+    const levelToUse = currentLevelDifficulty || difficulty;
 
-    switch (difficulty) {
+    switch (levelToUse) {
       case 'easy':
         allowedNumbers = [1, 2, 5, 10];
         break;
@@ -207,7 +208,7 @@ const MultiplicationGame = () => {
     setStreak(0);
     setUserAnswer('');
     setUsedQuestions(new Set());
-    generateQuestion();
+    generateQuestion(selectedDifficulty);
   };
 
   const submitAnswer = () => {
