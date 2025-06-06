@@ -12,6 +12,13 @@ import {
 } from 'lucide-react';
 import { shareResultsAsImage } from '../common/utils';
 import ShareableStats from './ShareableStats';
+import {
+  ALLOWED_NUMBERS_MAP,
+  generateAllPossibleQuestions as generateAllPossibleQuestionsLogic,
+  getTotalQuestionsForDifficulty as getTotalQuestionsForDifficultyLogic,
+  pickNextUniqueQuestion,
+  // DIFFICULTY_LEVELS, // Not directly used by name in component, map is enough
+} from '../common/gameLogic.js';
 
 const MultiplicationGame = () => {
   const GAME_TIME = 300; // 5 minutes in seconds
@@ -105,59 +112,28 @@ const MultiplicationGame = () => {
     shareResultsAsImage(resultsRef, gameData);
   };
 
-  const generateAllPossibleQuestions = (allowedNumbers) => {
-    const questions = [];
-    const allNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // כל המספרים האפשריים
-
-    for (let i = 0; i < allowedNumbers.length; i++) {
-      for (let j = 0; j < allNumbers.length; j++) {
-        const num1 = allowedNumbers[i]; // מספר מהרמה
-        const num2 = allNumbers[j]; // כל מספר מ-1 עד 10
-
-        // Create normalized key (smaller number first unless they're equal)
-        const minNum = Math.min(num1, num2);
-        const maxNum = Math.max(num1, num2);
-        const questionKey =
-          num1 === num2 ? `${num1}×${num2}` : `${minNum}×${maxNum}`;
-
-        questions.push({ num1, num2, key: questionKey });
-      }
-    }
-
-    return questions;
-  };
+  // generateAllPossibleQuestions is now imported as generateAllPossibleQuestionsLogic
 
   const generateQuestion = (currentLevelDifficulty) => {
-    let allowedNumbers;
     const levelToUse = currentLevelDifficulty || difficulty;
+    const allowedNumbersForLevel = ALLOWED_NUMBERS_MAP[levelToUse];
 
-    switch (levelToUse) {
-      case 'easy':
-        allowedNumbers = [1, 2, 5, 10];
-        break;
-      case 'medium':
-        allowedNumbers = [3, 4, 9];
-        break;
-      case 'hard':
-        allowedNumbers = [6, 7, 8];
-        break;
-      case 'champion':
-        allowedNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        break;
-      default:
-        allowedNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    if (!allowedNumbersForLevel) {
+      console.error("Invalid difficulty level:", levelToUse);
+      // Default to a fallback or handle error appropriately
+      setGameMode('menu'); // Example: go back to menu
+      return;
     }
 
-    // Generate all possible questions for this difficulty
-    const allQuestions = generateAllPossibleQuestions(allowedNumbers);
-
-    // Filter out already used question keys
-    const availableQuestions = allQuestions.filter(
-      (q) => !usedQuestions.has(q.key)
+    // Generate all *potential* question structures for this difficulty's allowed numbers
+    const allPotentialQuestions = generateAllPossibleQuestionsLogic(allowedNumbersForLevel);
+    
+    const { question: nextQuestionData, updatedUsedKeys } = pickNextUniqueQuestion(
+      allPotentialQuestions,
+      usedQuestions // Pass the current Set of used question keys
     );
 
-    // Check if we've completed all possible questions
-    if (availableQuestions.length === 0) {
+    if (!nextQuestionData) {
       // All questions completed! End game with bonus
       const completionBonus = 200;
       setScore((prev) => prev + completionBonus);
@@ -169,16 +145,11 @@ const MultiplicationGame = () => {
       return;
     }
 
-    // Pick a random question from available ones
-    const randomQuestion =
-      availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-
-    // Add to used questions
-    setUsedQuestions((prev) => new Set([...prev, randomQuestion.key]));
-
+    setUsedQuestions(updatedUsedKeys);
     setCurrentQuestion({
-      num1: randomQuestion.num1,
-      num2: randomQuestion.num2,
+      num1: nextQuestionData.num1,
+      num2: nextQuestionData.num2,
+      // key is part of nextQuestionData if needed, but setCurrentQuestion only needs num1, num2
     });
   };
 
@@ -535,10 +506,19 @@ const MultiplicationGame = () => {
 
   // Game Over Screen
   if (gameMode === 'gameOver') {
+    // Ensure totalCorrect and lives are accurate for calculation.
+    // questionsAnswered might be more reliable if it tracks actual attempts.
+    // The original logic for accuracy: (totalCorrect / (totalCorrect + (3 - lives)))
+    // This implies (3-lives) is the number of wrong answers.
+    // Let's assume questionsAnswered = totalCorrect + wrongAnswers
+    const wrongAnswers = questionsAnswered - totalCorrect;
+    const totalAttempts = totalCorrect + wrongAnswers;
+
     const accuracy =
-      questionsAnswered > 0
-        ? Math.round((totalCorrect / (totalCorrect + (3 - lives))) * 100)
+      totalAttempts > 0
+        ? Math.round((totalCorrect / totalAttempts) * 100)
         : 0;
+        
     const difficultyText =
       difficulty === 'easy'
         ? 'קל'
@@ -640,43 +620,7 @@ const MultiplicationGame = () => {
     );
   }
 
-  const getTotalQuestionsForDifficulty = (diff) => {
-    const allowedNumbers = {
-      easy: [1, 2, 5, 10], // 4 מספרים × 10 = 40, מינוס 6 כפילויות = 34
-      medium: [3, 4, 9], // 3 מספרים × 10 = 30, מינוס 3 כפילויות = 27
-      hard: [6, 7, 8], // 3 מספרים × 10 = 30, מינוס 3 כפילויות = 27
-      champion: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // 10 מספרים × 10 = 100, מינוס 45 כפילויות = 55
-    };
-
-    const numbers = allowedNumbers[diff];
-    if (!numbers) return 0;
-
-    // כל מספר מהרמה עם כל המספרים 1-10
-    const totalPossible = numbers.length * 10;
-
-    // נחשב כמה כפילויות יש
-    let duplicates = 0;
-    const seen = new Set();
-
-    for (let i = 0; i < numbers.length; i++) {
-      for (let j = 1; j <= 10; j++) {
-        const num1 = numbers[i];
-        const num2 = j;
-
-        const minNum = Math.min(num1, num2);
-        const maxNum = Math.max(num1, num2);
-        const key = `${minNum}×${maxNum}`;
-
-        if (seen.has(key)) {
-          duplicates++;
-        } else {
-          seen.add(key);
-        }
-      }
-    }
-
-    return seen.size; // מספר השאלות הייחודיות
-  };
+  // getTotalQuestionsForDifficulty is now imported as getTotalQuestionsForDifficultyLogic
 
   const getCompletedQuestionsCount = () => {
     return usedQuestions.size;
@@ -823,7 +767,7 @@ const MultiplicationGame = () => {
               style={{
                 width: `${
                   (getCompletedQuestionsCount() /
-                    getTotalQuestionsForDifficulty(difficulty)) *
+                    getTotalQuestionsForDifficultyLogic(difficulty)) * // Use imported
                   100
                 }%`,
               }}
@@ -833,12 +777,12 @@ const MultiplicationGame = () => {
           <div className="flex justify-between text-xs text-gray-500">
             <span>
               התקדמות: {getCompletedQuestionsCount()}/
-              {getTotalQuestionsForDifficulty(difficulty)}
+              {getTotalQuestionsForDifficultyLogic(difficulty)} {/* Use imported */}
             </span>
             <span>
               {Math.round(
                 (getCompletedQuestionsCount() /
-                  getTotalQuestionsForDifficulty(difficulty)) *
+                  getTotalQuestionsForDifficultyLogic(difficulty)) * // Use imported
                   100
               )}
               %
