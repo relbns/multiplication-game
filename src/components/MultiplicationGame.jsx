@@ -436,7 +436,7 @@ const MultiplicationGame = () => {
           <div className="mb-4 sm:mb-6">
             <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-yellow-500 mx-auto mb-3 sm:mb-4" />
             <h1 className="text-2xl sm:text-3xl font-bold text-purple-600 mb-2">
-              לוח הכפל
+              משחק לוח הכפל
             </h1>
             <p className="text-sm sm:text-base text-gray-600">
               בואי נתאמן יחד ונהיה אלופות!
